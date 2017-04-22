@@ -1,21 +1,33 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <h2>new post</h2>
+  <h2>New post</h2>
 
     <form method="post">
-      <label>
-        <div>subject</div>
+      <label class="col-md-12 col-sm-12 col-xs-12" >
+        <div>Subject</div>
         <input type="text" name="subject" value="{{subject}}">
       </label>
 
-      <label>
-        <div>blog</div>
+      <label class="col-md-12 col-sm-12 col-xs-12" >
+        <div>Blog</div>
         <textarea name="content">{{content}}</textarea>
       </label>
 
       <div class="error">{{error}}</div>
 
-      <input type="submit">
+      <div class="row">
+          <br>
+          <div class="col-md-2 col-sm-2 col-xs-2">
+            <button type="submit" class="btn btn-md btn-primary">
+              Publish
+            </button>
+          </div>
+          <div class="col-md-2 col-sm-2 col-xs-2">
+            <a href='/blog' class="btn btn-md btn-danger">
+              <i class="fa fa-times"></i>&nbsp;Cancel
+            </a>
+          </div>
+      </div>
     </form>
 {% endblock %}

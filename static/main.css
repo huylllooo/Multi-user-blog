@@ -1,7 +1,6 @@
 body {
     font-family: Helvetica, Arial, sans-serif;
     font-size: 14px;
-
     width: 800px;
     margin: 0 auto;
     padding: 10px;
@@ -14,8 +13,12 @@ h2 {
     margin-bottom: 20px;
 }
 
-.error {
-    color: red;
+
+pre {
+    padding: 8px;
+    margin: 0 0 0 0px;
+    white-space: pre-line;
+    word-break: normal;
 }
 
 label {
@@ -28,7 +31,14 @@ label + label {
 }
 
 input[type=text] {
-    width: 500px;
+    width: 80%;
+    font-size: 20px;
+    padding: 2px;
+    font-family: monospace;
+}
+
+input[type=password] {
+    width: 80%;
     font-size: 20px;
     padding: 2px;
     font-family: monospace;
@@ -53,6 +63,11 @@ input[type=submit] {
     text-align: center;
     margin-bottom: 30px;
     text-decoration: none;
+}
+
+/*space for fixed navbar*/
+.height-adjust{
+    margin-top: 6%;
 }
 
 .post + .post {
@@ -81,3 +96,12 @@ input[type=submit] {
     margin-top: 5px;
 }
 
+.error {
+    color: red;
+}
+
+.commenter {
+    color: #87CEFA;
+    font-weight: 450;
+    font-size: 15px;
+}

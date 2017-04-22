@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block header %}
+<div class="header">
+  <h2>Edit comment on '{{ post.subject }}'</h2>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<form method="post">
+
+  <label class="col-md-12 col-sm-12 col-xs-12" >
+    <div>Comment</div>
+    <textarea name="content">{{comment.content}}</textarea>
+  </label>
+
+  <div class="error">{{error}}</div>
+
+  <div class="row">
+          <br>
+          <div class="col-md-2 col-sm-2 col-xs-2">
+            <button type="submit" class="btn btn-md btn-primary">
+              <i class="fa fa-check"></i>&nbsp;Update
+            </button>
+          </div>
+          <div class="col-md-2 col-sm-2 col-xs-2">
+            <a href='/blog/{{comment.post.key().id()}}' class="btn btn-md btn-danger">
+              <i class="fa fa-times"></i>&nbsp;Cancel
+            </a>
+          </div>
+  </div>
+</form>
+
+{% endblock %}

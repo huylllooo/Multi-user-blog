@@ -1,0 +1,32 @@
+<div class="navbar navbar-inverse navbar-fixed-top">
+  <div class="container">
+    <div class="collapse navbar-collapse">
+      <ul class="nav navbar-nav">
+        <li><a href="/">Home</a></li>
+        {% if user %}
+          <li><a href="/blog/newpost">New Post</a></li>
+        {% endif %}
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+          {% if user %}
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown"><b>Welcome, {{user.name}}&nbsp;</b><b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="/logout">Log Out</a></li>
+              </ul>
+            </li>
+          {% else %}
+            <li class="dropdown">
+              <li><a href="/login" class="fa fa-sign-in"> Login</a></li>
+              <li><a href="/signup" class="fa fa-user"> Signup</a></li>
+            </li>
+          {% endif %}
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+
+

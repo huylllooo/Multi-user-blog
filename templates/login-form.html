@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block header %}
+<div class="header">
+  <h1>Login</h1>
+</div>
+{% endblock %}
+
+{% block content %}
+
+    <form method="post">
+      <table>
+        <tr>
+          <td style="font-size: 20px">
+            Username&nbsp;
+          </td>
+          <td>
+            <input type="text" name="username" value="{{username}}">
+          </td>
+        </tr>
+
+        <tr>
+          <td style="font-size: 20px">
+            Password&nbsp;
+          </td>
+          <td>
+            <input type="password" name="password" value="">
+          </td>
+        </tr>
+      </table>
+
+      <div class="error">
+        {{error}}
+      </div>
+      <br>
+      <input type="submit" class="btn btn-md btn-primary">
+    </form>
+
+{% endblock %}
