@@ -28,6 +28,9 @@ def check_secure_val(secure_val):
     if secure_val == make_secure_val(val):
         return val
 
+"""
+Handle generic stuff
+"""
 class BlogHandler(webapp2.RequestHandler):
     def write(self, *a, **kw):
         self.response.out.write(*a, **kw)
@@ -70,7 +73,8 @@ class MainPage(BlogHandler):
         self.render('front.html', posts = posts)
 
 
-##### user stuff
+##### Accounts and Security #####
+
 def make_salt(length = 5):
     return ''.join(random.choice(letters) for x in xrange(length))
 
@@ -87,7 +91,12 @@ def valid_pw(name, password, h):
 def users_key(group = 'default'):
     return db.Key.from_path('users', group)
 
+"""
+User class
+"""
+
 class User(db.Model):
+
     name = db.StringProperty(required = True)
     pw_hash = db.StringProperty(required = True)
     email = db.StringProperty()
@@ -116,34 +125,50 @@ class User(db.Model):
             return u
 
 
-
-##### blog stuff
+##### Blog post related #####
 
 def blog_key(name = 'default'):
     return db.Key.from_path('blogs', name)
 
+"""
+Post class
+store blog post's info
+"""
 class Post(db.Model):
+
+	# basic info
     subject = db.StringProperty(required = True)
     content = db.TextProperty(required = True)
     user = db.ReferenceProperty(User, required = True)
     created = db.DateTimeProperty(auto_now_add = True)
     last_modified = db.DateTimeProperty(auto_now = True)
 
+    # post's likes
     likes_count = db.IntegerProperty(required = True)
     liked_users = db.StringListProperty()
 
+    # post's comments
     comments_count = db.IntegerProperty(required = True)
 
     def render(self):
         self._render_text = self.content.replace('\n', '<br>')
         return render_str("post.html", p = self)
 
+"""
+Render blog's frontpage
+"""
 class BlogFront(BlogHandler):
+
+	# get 10 lastest post
     def get(self):
         posts = greetings = db.GqlQuery("select * from Post order by created desc limit 10")
         self.render('front.html', posts = posts)
 
+"""
+Render a specified post
+"""
 class PostPage(BlogHandler):
+
     def get(self, post_id):
         key = db.Key.from_path('Post', int(post_id), parent=blog_key())
         post = db.get(key)
@@ -157,14 +182,19 @@ class PostPage(BlogHandler):
         else:
         	self.render("permalink.html", post = post)
 
-
+"""
+Create a new post
+"""
 class NewPost(BlogHandler):
+
+	# Prompt non-user to login page
     def get(self):
         if self.user:
             self.render("newpost.html")
         else:
             self.redirect("/login")
 
+    # Create a new page with input subject and content
     def post(self):
         if not self.user:
             self.redirect('/blog')
@@ -174,14 +204,22 @@ class NewPost(BlogHandler):
         content = self.request.get('content')
 
         if subject and content:
-            p = Post(parent = blog_key(), subject = subject, content = content, likes_count = 0, comments_count = 0, user = current_user)
+            p = Post(parent = blog_key(), subject = subject,
+            		content = content, likes_count = 0,
+            		comments_count = 0, user = current_user)
             p.put()
             self.redirect('/blog/%s' % str(p.key().id()))
         else:
             error = "subject and content, please!"
-            self.render("newpost.html", subject=subject, content=content, error=error)
+            self.render("newpost.html", subject=subject,
+            			content=content, error=error)
 
+"""
+Edit a post
+"""
 class EditPost(BlogHandler):
+
+	# Check authorization, only author can edit post
     def get(self, post_id):
         if not self.user:
             self.redirect('/blog')
@@ -195,8 +233,10 @@ class EditPost(BlogHandler):
         	self.render("editpost.html", post=post)
         else:
         	error = "Cannot edit this post"
-        	self.render("permalink.html", post=post, logged_in = True, error = error)
+        	self.render("permalink.html", post=post,
+        				logged_in = True, error = error)
 
+    # Update post
     def post(self, post_id):
         if not self.user:
             self.redirect('/blog')
@@ -221,9 +261,15 @@ class EditPost(BlogHandler):
 	            self.render("editpost.html", post=post, error = error)
         else:
         	error = "Cannot edit this post"
-        	self.render("permalink.html", post=post, logged_in = True, error = error)
+        	self.render("permalink.html", post=post,
+        				logged_in = True, error = error)
 
+"""
+Delete a post
+"""
 class DeletePost(BlogHandler):
+
+	# Check authorization, only author can delete post
     def get(self, post_id):
         if not self.user:
             self.redirect('/blog')
@@ -239,7 +285,11 @@ class DeletePost(BlogHandler):
         	self.render("post-deleted.html", subject = subject)
         else:
         	error = "You cannot delete this post"
-        	self.render("permalink.html", post=post, logged_in = True, error = error)
+        	self.render("permalink.html", post=post,
+        				logged_in = True, error = error)
+
+
+##### Like related #####
 
 class LikePost(BlogHandler):
     def get(self, post_id):
@@ -254,7 +304,8 @@ class LikePost(BlogHandler):
 
         if self.user.name == post.user.name:
         	error = "You are trying to like your own post! ;)"
-        	self.render("permalink.html", post=post, logged_in = True, error = error)
+        	self.render("permalink.html", post=post,
+        				logged_in = True, error = error)
         else:
 	        #check if user has liked this post or not
 	        if self.user.name in post.liked_users:
@@ -272,20 +323,30 @@ class LikePost(BlogHandler):
 		        post.put()
 		        self.redirect('/blog/%s' % str(post.key().id()))
 
-###### Comment
+
+###### Comment related #####
+
+"""
+Comment class
+store comment
+"""
 class Comment(db.Model):
-    user = db.ReferenceProperty(User, required = True, collection_name='comments')
-    post = db.ReferenceProperty(Post, required = True, collection_name='comments')
+
+    user = db.ReferenceProperty(User, required = True,
+    							collection_name='comments')
+    post = db.ReferenceProperty(Post, required = True,
+    							collection_name='comments')
     content = db.TextProperty(required = True)
     created = db.DateTimeProperty(auto_now_add = True)
     last_modified = db.DateTimeProperty(auto_now = True)
 
 class CommentPost(BlogHandler):
-	"""Add """
+	"""Add comment to a post"""
 
 	def post(self, post_id):
 		if not self.user:
-			self.redirect('blog')
+			self.redirect('/login')
+			return
 
 		key = db.Key.from_path('Post', int(post_id), parent=blog_key())
 		post = db.get(key)
@@ -301,14 +362,16 @@ class CommentPost(BlogHandler):
 			c.put()
 
 class CommentDelete(BlogHandler):
-	"""Delete a comment from post"""
-
 	def post(self, comment_id):
+		# Prompt non-user to login page
 		if not self.user:
-			self.redirect('/blog')
+			self.redirect('/login')
+			return
 
 		comment = Comment.get_by_id(int(comment_id))
 		post = comment.post
+
+		# Check authorization, only author can delete comment
 		if comment.user.name == self.user.name:
 			comment.delete()
 			post.comments_count -= 1
@@ -318,27 +381,34 @@ class CommentDelete(BlogHandler):
 			self.redirect('/blog/%s' % str(post.key().id()))
 		else:
 			error = "You cannot delete this comment"
-			self.render("permalink.html", post = post, logged_in = True, comment_delete_error = error, this_comment = comment)
+			self.render("permalink.html", post = post, logged_in = True,
+						comment_delete_error = error, this_comment = comment)
 
 class CommentEdit(BlogHandler):
 
 	def get(self, comment_id):
 		comment = Comment.get_by_id(int(comment_id))
+		# Prompt non-user to login page
+		# Check authorization, only author can edit comment
 		if not self.user:
-			error = "You must log in to be able to edit comments"
-			self.render('login-form.html', error = error)
+			self.redirect('/login')
 		else:
 			if comment.user.name == self.user.name:
-				self.render("editcomment.html", comment = comment, post = comment.post)
+				self.render("editcomment.html", comment = comment,
+							post = comment.post)
 			else:
 				error = "You cannot edit this comment"
-				self.render("permalink.html", post = comment.post, logged_in = True, comment_delete_error = error, this_comment = comment)
+				self.render("permalink.html", post = comment.post,
+							logged_in = True, comment_delete_error = error,
+							this_comment = comment)
 
 	def post(self, comment_id):
 		comment = Comment.get_by_id(int(comment_id))
+		# Prompt non-user to login page
+		# Check authorization, only author can edit comment
+		# Update comment
 		if not self.user:
-			error = "You must log in to be able to edit comments"
-			self.render('login-form.html', error = error)
+			self.redirect('/login')
 		else:
 			if comment.user.name == self.user.name:
 				comment.content = self.request.get('content')
@@ -347,20 +417,12 @@ class CommentEdit(BlogHandler):
 				comment.put()
 			else:
 				error = "You cannot edit this comment"
-				self.render("permalink.html", post = comment.post, logged_in = True, comment_delete_error = error, this_comment = comment)
-###### Unit 2 HW's
-class Rot13(BlogHandler):
-    def get(self):
-        self.render('rot13-form.html')
+				self.render("permalink.html", post = comment.post,
+					logged_in = True, comment_delete_error = error,
+					this_comment = comment)
 
-    def post(self):
-        rot13 = ''
-        text = self.request.get('text')
-        if text:
-            rot13 = text.encode('rot13')
 
-        self.render('rot13-form.html', text = rot13)
-
+##### Sign up, Log in, Log out#####
 
 USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
 def valid_username(username):
@@ -411,9 +473,6 @@ class Signup(BlogHandler):
     def done(self, *a, **kw):
         raise NotImplementedError
 
-class Unit2Signup(Signup):
-    def done(self):
-        self.redirect('/unit2/welcome?username=' + self.username)
 
 class Register(Signup):
     def done(self):
@@ -450,13 +509,6 @@ class Logout(BlogHandler):
         self.logout()
         self.redirect('/blog')
 
-class Unit3Welcome(BlogHandler):
-    def get(self):
-        if self.user:
-            self.render('welcome.html', username = self.user.name)
-        else:
-            self.redirect('/signup')
-
 class Welcome(BlogHandler):
     def get(self):
         username = self.request.get('username')
@@ -466,21 +518,17 @@ class Welcome(BlogHandler):
             self.redirect('/unit2/signup')
 
 app = webapp2.WSGIApplication([('/', MainPage),
-                               ('/unit2/rot13', Rot13),
-                               ('/unit2/signup', Unit2Signup),
-                               ('/unit2/welcome', Welcome),
                                ('/blog/?', BlogFront),
                                ('/blog/([0-9]+)', PostPage),
                                ('/blog/edit/([0-9]+)', EditPost),
                                ('/blog/delete/([0-9]+)', DeletePost),
                                ('/blog/like/([0-9]+)', LikePost),
                                ('/blog/comment/([0-9]+)', CommentPost),
-                               ('/blog/comment/delete/([0-9]+)', CommentDelete),
+                               ('/blog/comment/delete/([0-9]+)',CommentDelete),
                                ('/blog/comment/edit/([0-9]+)', CommentEdit),
                                ('/blog/newpost', NewPost),
                                ('/signup', Register),
                                ('/login', Login),
-                               ('/logout', Logout),
-                               ('/unit3/welcome', Unit3Welcome),
+                               ('/logout', Logout)
                                ],
                               debug=True)
