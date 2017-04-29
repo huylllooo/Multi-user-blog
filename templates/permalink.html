@@ -5,15 +5,16 @@
    <div class="col-md-8">
       <ul class="list-inline">
          {% if logged_in %}
-         <li><a href="/blog/like/{{post.key().id()}}" class="btn fa fa-heart-o"><span >&nbsp;{{post.likes_count}}</span></a></li>
+         <li><a href="/blog/like/{{post.key().id()}}" class="btn fa fa-heart-o"><span >&nbsp;{{post.likes}}</span></a></li>
          <li><a href="#comments_section" class="btn fa fa-comment-o"><span >&nbsp;{{post.comments_count}}</span></a></li>
          <li><a href="/blog/edit/{{post.key().id()}}"><span class="fa fa-edit"></span>&nbsp;Edit</a></li>
          <li><a href="/blog/delete/{{post.key().id()}}"><span class="fa fa-trash-o"></span>&nbsp;Delete</a></li>
          {% else %}
-         <li><a href="/login" class="btn fa fa-heart-o"><span >&nbsp;{{post.likes_count}}</span></a></li>
+         <li><a href="/login" class="btn fa fa-heart-o"><span >&nbsp;{{post.likes}}</span></a></li>
          <li><a class="btn fa fa-comment-o"><span >&nbsp;{{post.comments_count}}</span></a></li>
          {% endif %}
       </ul>
+
    </div>
 </div>
 <div class="error">{{error}}</div>
